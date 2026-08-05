@@ -1,0 +1,87 @@
+{
+  "name": "nova-theme",
+  "author": "lumine-code",
+  "version": "1.0.0",
+  "description": "The Nova day and night UI and syntax themes.",
+  "keywords": [
+    "light",
+    "dark",
+    "syntax",
+    "day-night",
+    "color-scheme",
+    "violet"
+  ],
+  "repository": "https://github.com/lumine-code/nova-theme",
+  "bugs": {
+    "url": "https://github.com/lumine-code/nova-theme/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "lumine": "^1.0.0"
+  },
+  "themes": [
+    {
+      "name": "nova-day-ui",
+      "theme": "ui",
+      "extends": "one-theme::styles/ui/*",
+      "styles": [
+        "styles/ui-overrides",
+        "styles/day-ui"
+      ]
+    },
+    {
+      "name": "nova-day-syntax",
+      "theme": "syntax",
+      "extends": "one-theme::styles/day-syntax/*",
+      "styles": [
+        "styles/syntax-overrides",
+        "styles/day-syntax"
+      ]
+    },
+    {
+      "name": "nova-night-ui",
+      "theme": "ui",
+      "extends": "one-theme::styles/ui/*",
+      "styles": [
+        "styles/ui-overrides",
+        "styles/night-ui"
+      ]
+    },
+    {
+      "name": "nova-night-syntax",
+      "theme": "syntax",
+      "extends": "one-theme::styles/night-syntax/*",
+      "styles": [
+        "styles/syntax-overrides",
+        "styles/night-syntax"
+      ]
+    }
+  ],
+  "themePacks": [
+    {
+      "name": "Nova",
+      "light": [
+        "nova-day-ui",
+        "nova-day-syntax"
+      ],
+      "dark": [
+        "nova-night-ui",
+        "nova-night-syntax"
+      ]
+    }
+  ],
+  "scripts": {
+    "test": "lumine --test spec",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.2.2",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.6"
+  }
+}
