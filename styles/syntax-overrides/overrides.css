@@ -1,5 +1,5 @@
 /* Nova keeps ligatures enabled, uses an immediate cursor, and italicizes comments. */
-atom-text-editor {
+lumine-text-editor {
   .line.cursor-line,
   &[mini] {
     font-variant-ligatures: normal;
