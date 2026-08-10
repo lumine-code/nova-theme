@@ -29,7 +29,7 @@ describe("nova-theme", () => {
     expect(uiPathByName.get("02-badges.css")).toContain("one-theme");
     expect(uiPathByName.get("03-buttons.css")).toContain("one-theme");
     expect(uiPathByName.get("overrides.css")).toContain("nova-theme");
-    expect(uiPathByName.has("26-config.css")).toBe(false);
+    expect(uiPathByName.has("config.css")).toBe(false);
     expect(syntaxPathByName.get("syntax.lumine-text-editor.css")).toContain("one-theme");
     expect(syntaxPathByName.get("variables.css")).toContain("nova-theme");
     expect(syntaxPathByName.get("overrides.css")).toContain("nova-theme");
