@@ -47,6 +47,60 @@ describe("nova-theme", () => {
     expect(lumine.themes.stylesheetElementForId(uiPathByName.get("overrides.css"))).not.toBeNull();
   });
 
+  // These backgrounds are translucent, so they must land on the tile and
+  // nothing else. Keyed on `.inline-block` they also caught the layout blocks a
+  // tile nests inside itself, and the two layers composited into a second,
+  // darker rectangle inset by the tile's padding.
+  it("treats only the stamped tile as a status-bar tile", async () => {
+    await lumine.packages.activatePackage("nova-theme");
+    await lumine.packages.activatePackage("nova-day-ui");
+
+    const statusBar = document.createElement("div");
+    statusBar.className = "status-bar";
+    const panel = document.createElement("div");
+    panel.className = "status-bar-left";
+    const tile = document.createElement("div");
+    tile.className = "status-bar-item";
+    const nested = document.createElement("a");
+    nested.className = "inline-block";
+    tile.appendChild(nested);
+    panel.appendChild(tile);
+    statusBar.appendChild(panel);
+    jasmine.attachToDOM(statusBar);
+
+    expect(getComputedStyle(tile).borderRadius).toBe("6px");
+    expect(getComputedStyle(tile).marginTop).toBe("4px");
+    expect(getComputedStyle(tile).marginBottom).toBe("4px");
+
+    expect(getComputedStyle(nested).borderRadius).toBe("0px");
+    expect(getComputedStyle(nested).marginTop).toBe("0px");
+    expect(getComputedStyle(nested).marginBottom).toBe("0px");
+  });
+
+  // Both strips frame the window with the same pill, so the two insets are one
+  // number and cannot drift apart.
+  it("gives a title-bar control tile the same inset pill as a status-bar tile", async () => {
+    await lumine.packages.activatePackage("nova-theme");
+    await lumine.packages.activatePackage("nova-day-ui");
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "title-bar";
+    const controlTiles = document.createElement("div");
+    controlTiles.className = "control-tiles";
+    controlTiles.style.height = "32px";
+    const tile = document.createElement("button");
+    tile.className = "title-bar-item";
+    controlTiles.appendChild(tile);
+    titleBar.appendChild(controlTiles);
+    jasmine.attachToDOM(titleBar);
+
+    const style = getComputedStyle(tile);
+    expect(style.height).toBe("24px");
+    expect(style.marginTop).toBe("4px");
+    expect(style.marginBottom).toBe("4px");
+    expect(style.borderRadius).toBe("6px");
+  });
+
   it("renders Search Panel as a rounded bottom card", async () => {
     await lumine.packages.activatePackage("nova-theme");
     await lumine.packages.activatePackage("nova-day-ui");

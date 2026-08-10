@@ -1,5 +1,12 @@
 /* Nova overrides for the One UI foundation. */
 
+:root {
+  /* How far a pill sits in from the strip that holds it. Tabs, status-bar
+     tiles and title-bar control tiles are the same shape, so they share one
+     number rather than three that drift apart. */
+  --nova-pill-inset: 4px;
+}
+
 /* Buttons */
 
 .btn {
@@ -281,7 +288,7 @@ lumine-pane-container lumine-pane {
 /* Tabs */
 
 .tab-bar {
-  --tab-pill-inset: 4px;
+  --tab-pill-inset: var(--nova-pill-inset);
   --tab-pill-height: calc(var(--ui-tab-height) - var(--tab-pill-inset) * 2);
   padding: 0 var(--tab-pill-inset);
   box-shadow: none;
@@ -324,6 +331,27 @@ lumine-pane-container lumine-pane {
 
   lumine-dock & .tab.active {
     background-color: var(--tab-background-color-active);
+  }
+
+  /* The scroll strips take the bar's own background so the tabs they cover read
+     as empty bar. Here the bar paints nothing and the pane shows through it, so
+     inheriting would leave them transparent and the covered tab on show. */
+  .tab-scroll {
+    background: var(--pane-item-background-color);
+  }
+
+  /* And the buttons are pills, like the tabs beside them. */
+  .tab-scroll-button {
+    align-self: flex-start;
+    height: var(--tab-pill-height);
+    margin-top: var(--tab-pill-inset);
+    border: none;
+    border-radius: var(--component-border-radius);
+    background-color: transparent;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--tab-background-color-active) 55%, transparent);
+    }
   }
 
   .placeholder::before {
@@ -387,7 +415,16 @@ lumine-pane-container > lumine-pane.pane {
 .status-bar {
   background-color: var(--app-background-color);
 
-  .inline-block {
+  /* A tile is what the bar stamps `.status-bar-item` on. These backgrounds are
+     translucent, so they must land on the tile and nothing else: keyed on
+     `.inline-block` they also caught the layout blocks a tile nests inside
+     itself, and the two layers composited into a second, darker rectangle.
+     The pill is inset from the strip, the same shape a tab and a title-bar
+     control tile take. */
+  .status-bar-item {
+    height: calc(var(--ui-tab-height) - var(--nova-pill-inset) * 2);
+    margin-block: var(--nova-pill-inset);
+    line-height: calc(var(--ui-tab-height) - var(--nova-pill-inset) * 2);
     border-radius: var(--component-border-radius);
 
     &:hover {
@@ -397,5 +434,24 @@ lumine-pane-container > lumine-pane.pane {
     &:active {
       background-color: rgb(from var(--text-color) r g b / 16%);
     }
+  }
+}
+
+/* Title bar
+ *
+ * A control tile is the same pill as a status-bar tile, so the two strips
+ * frame the window with one shape. */
+
+.title-bar .control-tiles .title-bar-item {
+  height: calc(100% - var(--nova-pill-inset) * 2);
+  margin-block: var(--nova-pill-inset);
+  border-radius: var(--component-border-radius);
+
+  &:hover {
+    background-color: rgb(from var(--text-color) r g b / 10%);
+  }
+
+  &:active {
+    background-color: rgb(from var(--text-color) r g b / 16%);
   }
 }
