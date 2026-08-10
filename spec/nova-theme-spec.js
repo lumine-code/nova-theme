@@ -30,14 +30,14 @@ describe("nova-theme", () => {
     expect(uiPathByName.get("03-buttons.css")).toContain("one-theme");
     expect(uiPathByName.get("overrides.css")).toContain("nova-theme");
     expect(uiPathByName.has("config.css")).toBe(false);
-    expect(syntaxPathByName.get("syntax.lumine-text-editor.css")).toContain("one-theme");
+    expect(syntaxPathByName.get("04-base.css")).toContain("one-theme");
     expect(syntaxPathByName.get("variables.css")).toContain("nova-theme");
     expect(syntaxPathByName.get("overrides.css")).toContain("nova-theme");
 
     expect(uiPaths.indexOf(uiPathByName.get("03-buttons.css"))).toBeLessThan(
       uiPaths.indexOf(uiPathByName.get("overrides.css")),
     );
-    expect(syntaxPaths.indexOf(syntaxPathByName.get("syntax.lumine-text-editor.css"))).toBeLessThan(
+    expect(syntaxPaths.indexOf(syntaxPathByName.get("04-base.css"))).toBeLessThan(
       syntaxPaths.indexOf(syntaxPathByName.get("overrides.css")),
     );
 
