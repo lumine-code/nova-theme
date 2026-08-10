@@ -442,11 +442,15 @@ lumine-pane-container > lumine-pane.pane {
  * A control tile is the same pill as a status-bar tile, so the two strips
  * frame the window with one shape. */
 
+/* A pill is measured against the bar, so the row gives up the bleed the
+   package grants a full-height tile — that reaches above the bar and would
+   push the pill off centre. It has to be set on the row: the row is what
+   carries the bleed and what clips above it. */
+.title-bar .control-tiles {
+  --title-bar-item-bleed: 0px;
+}
+
 .title-bar .control-tiles .title-bar-item {
-  /* A pill is measured against the bar, so it gives up the bleed the package
-     grants a full-height tile — that reaches above the bar and would push the
-     pill off centre. */
-  --title-bar-item-bleed: 0;
   height: calc(100% - var(--nova-pill-inset) * 2);
   margin-block: var(--nova-pill-inset);
   border-radius: var(--component-border-radius);
