@@ -443,15 +443,27 @@ lumine-pane-container > lumine-pane.pane {
  * frame the window with one shape. */
 
 .title-bar .control-tiles .title-bar-item {
+  /* A pill is measured against the bar, so it gives up the bleed the package
+     grants a full-height tile — that reaches above the bar and would push the
+     pill off centre. */
+  --title-bar-item-bleed: 0;
   height: calc(100% - var(--nova-pill-inset) * 2);
   margin-block: var(--nova-pill-inset);
   border-radius: var(--component-border-radius);
+}
 
-  &:hover {
+/* An application-menu label is the other thing you can point at in this strip,
+   so it takes the same translucent feedback as a tile. It paints through
+   `::before` because its own box holds the submenu; a menu bar label stays full
+   height, as it does in every window shell, so only the colour is shared. */
+.title-bar {
+  .control-tiles .title-bar-item:hover,
+  .app-menu .menu-label:is(:hover, .open, .focused)::before {
     background-color: rgb(from var(--text-color) r g b / 10%);
   }
 
-  &:active {
+  .control-tiles .title-bar-item:active,
+  .app-menu .menu-label:active::before {
     background-color: rgb(from var(--text-color) r g b / 16%);
   }
 }
