@@ -10,17 +10,17 @@
 
 :root {
   --text-color: hsl(228, 10%, 32%);
-  --text-color-subtle: hsl(228, 8%, 56%);
+  --text-color-subtle: hsl(228, 8%, 44%);
   --text-color-highlight: hsl(228, 14%, 12%);
   --text-color-selected: hsl(228, 16%, 6%);
   --text-color-info: hsl(215, 90%, 46%);
   --text-color-success: hsl(150, 65%, 34%);
   --text-color-warning: hsl(35, 90%, 38%);
   --text-color-error: hsl(4, 78%, 50%);
-  --background-color-info: hsl(215, 90%, 52%);
+  --background-color-info: hsl(215, 90%, 47%);
   --background-color-success: hsl(150, 55%, 42%);
   --background-color-warning: hsl(38, 80%, 46%);
-  --background-color-error: hsl(4, 70%, 54%);
+  --background-color-error: hsl(4, 70%, 47%);
   --background-color-highlight: hsl(228, 16%, 92%);
   --background-color-selected: hsl(230, 40%, 90%);
   --app-background-color: hsl(226, 14%, 91%);
@@ -68,7 +68,7 @@
   --font-family: system-ui;
   --use-custom-controls: true;
   --text-color-faded: hsla(228, 10%, 32%, 0.3);
-  --text-color-hint: hsl(228, 8%, 56%);
+  --text-color-hint: hsl(228, 8%, 44%);
   --text-color-added: hsl(150, 65%, 34%);
   --text-color-ignored: hsl(228, 8%, 56%);
   --text-color-modified: hsl(35, 90%, 38%);
@@ -96,7 +96,7 @@
   --progress-background-color: #4f58d6;
   --scrollbar-color-editor: hsl(228, 12%, 82%);
   --scrollbar-background-color-editor: hsl(0, 0%, 100%);
-  --tab-text-color: hsl(228, 8%, 50%);
+  --tab-text-color: hsl(228, 8%, 45%);
   --tab-text-color-active: hsl(228, 14%, 12%);
   --tab-text-color-editor: hsl(228, 14%, 12%);
   --tab-background-color-editor: hsl(0, 0%, 100%);
@@ -114,7 +114,7 @@
   --ui-line-height: 2em;
   --ui-tab-height: 2.75em;
   --text-color-on-info: #fff;
-  --text-color-on-success: #fff;
-  --text-color-on-warning: #fff;
+  --text-color-on-success: var(--text-color-selected);
+  --text-color-on-warning: var(--text-color-selected);
   --text-color-on-error: #fff;
 }

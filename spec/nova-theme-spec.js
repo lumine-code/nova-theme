@@ -1,9 +1,53 @@
 const path = require("path");
 
+function colorChannels(color) {
+  let match = color.match(/^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+  if (match) return match.slice(1, 4).map(Number);
+
+  match = color.match(/^color\(srgb\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/);
+  if (match) {
+    return match.slice(1, 4).map((channel) => Math.min(255, Math.max(0, Number(channel) * 255)));
+  }
+
+  throw new Error(`Unsupported computed color: ${color}`);
+}
+
+function relativeLuminance(color) {
+  const [red, green, blue] = colorChannels(color).map((channel) => {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function contrastRatio(first, second) {
+  const lighter = Math.max(relativeLuminance(first), relativeLuminance(second));
+  const darker = Math.min(relativeLuminance(first), relativeLuminance(second));
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function contrastRatioWithAlpha(foreground, background) {
+  const foregroundMatch = foreground.match(
+    /^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?/,
+  );
+  const backgroundChannels = colorChannels(background);
+  if (!foregroundMatch) return contrastRatio(foreground, background);
+
+  const foregroundChannels = foregroundMatch.slice(1, 4).map(Number);
+  const alpha = foregroundMatch[4] == null ? 1 : Number(foregroundMatch[4]);
+  const composited = foregroundChannels.map(
+    (channel, index) => channel * alpha + backgroundChannels[index] * (1 - alpha),
+  );
+  const compositedColor = `rgb(${composited.join(", ")})`;
+  return contrastRatio(compositedColor, background);
+}
+
 describe("nova-theme", () => {
   afterEach(async () => {
     await lumine.packages.deactivatePackage("nova-day-ui");
     await lumine.packages.deactivatePackage("nova-day-syntax");
+    await lumine.packages.deactivatePackage("nova-night-ui");
+    await lumine.packages.deactivatePackage("nova-night-syntax");
     await lumine.packages.deactivatePackage("nova-theme");
   });
 
@@ -118,5 +162,217 @@ describe("nova-theme", () => {
     expect(style.marginLeft).toBe("6px");
     expect(style.borderRadius).toBe("9px");
     expect(style.overflow).toBe("hidden");
+  });
+
+  it("keeps selected and panel-heading buttons on their intended surfaces", async () => {
+    await lumine.packages.activatePackage("nova-theme");
+    await lumine.packages.activatePackage("nova-day-ui");
+
+    const selected = document.createElement("button");
+    selected.className = "btn selected";
+    const heading = document.createElement("div");
+    heading.className = "panel-heading";
+    const headingDefault = document.createElement("button");
+    headingDefault.className = "btn";
+    const headingSelected = document.createElement("button");
+    headingSelected.className = "btn selected";
+    const headingPrimary = document.createElement("button");
+    headingPrimary.className = "btn btn-primary";
+    heading.append(headingDefault, headingSelected, headingPrimary);
+    document.body.append(selected, heading);
+
+    try {
+      expect(getComputedStyle(selected).color).toBe("rgb(255, 255, 255)");
+      expect(getComputedStyle(headingDefault).backgroundColor).toBe("rgb(255, 255, 255)");
+      expect(getComputedStyle(headingSelected).backgroundColor).toBe("rgb(79, 88, 214)");
+      expect(getComputedStyle(headingSelected).color).toBe("rgb(255, 255, 255)");
+      expect(getComputedStyle(headingPrimary).backgroundColor).toBe("rgb(79, 88, 214)");
+      expect(getComputedStyle(headingPrimary).color).toBe("rgb(255, 255, 255)");
+    } finally {
+      selected.remove();
+      heading.remove();
+    }
+  });
+
+  for (const mode of ["day", "night"]) {
+    it(`keeps ${mode} semantic controls readable at rest and on hover`, async () => {
+      await lumine.packages.activatePackage("nova-theme");
+      await lumine.packages.activatePackage(`nova-${mode}-ui`);
+
+      const fixture = document.createElement("div");
+      document.body.appendChild(fixture);
+
+      try {
+        for (const kind of ["info", "success", "warning", "error"]) {
+          const button = document.createElement("button");
+          button.className = `btn btn-${kind}`;
+          const badge = document.createElement("span");
+          badge.className = `badge badge-${kind}`;
+          const highlight = document.createElement("span");
+          highlight.className = `highlight-${kind}`;
+          const hoverProbe = document.createElement("span");
+          hoverProbe.style.backgroundColor = `hsl(from var(--background-color-${kind}) h s calc(l + 4))`;
+          const activeProbe = document.createElement("span");
+          activeProbe.style.backgroundColor = "var(--btn-variant-active-background)";
+          const selectedProbe = document.createElement("span");
+          selectedProbe.style.backgroundColor = "var(--btn-variant-selected-background)";
+          const selectedHoverProbe = document.createElement("span");
+          selectedHoverProbe.style.backgroundColor = "var(--btn-variant-selected-hover-background)";
+          button.append(activeProbe, selectedProbe, selectedHoverProbe);
+          fixture.append(button, badge, highlight, hoverProbe);
+
+          const buttonStyle = getComputedStyle(button);
+          const badgeStyle = getComputedStyle(badge);
+          const highlightStyle = getComputedStyle(highlight);
+          const stateBackgrounds = [
+            buttonStyle.backgroundColor,
+            getComputedStyle(hoverProbe).backgroundColor,
+            getComputedStyle(activeProbe).backgroundColor,
+            getComputedStyle(selectedProbe).backgroundColor,
+            getComputedStyle(selectedHoverProbe).backgroundColor,
+          ];
+
+          expect(badgeStyle.color).toBe(buttonStyle.color);
+          expect(highlightStyle.color).toBe(buttonStyle.color);
+          expect(
+            contrastRatio(highlightStyle.color, highlightStyle.backgroundColor),
+          ).toBeGreaterThanOrEqual(4.5);
+          for (const background of stateBackgrounds) {
+            expect(contrastRatio(buttonStyle.color, background)).toBeGreaterThanOrEqual(4.5);
+          }
+        }
+      } finally {
+        fixture.remove();
+      }
+    });
+  }
+
+  it("keeps every custom form control keyboard-visible", async () => {
+    await lumine.packages.activatePackage("nova-theme");
+    await lumine.packages.activatePackage("nova-day-ui");
+
+    const controls = [
+      ["checkbox", "input-checkbox"],
+      ["radio", "input-radio"],
+      ["checkbox", "input-toggle"],
+      ["range", "input-range"],
+    ].map(([type, className]) => {
+      const control = document.createElement("input");
+      control.type = type;
+      control.className = className;
+      document.body.appendChild(control);
+      return control;
+    });
+
+    try {
+      for (const control of controls) {
+        control.focus();
+        expect(document.activeElement).toBe(control);
+        expect(getComputedStyle(control).boxShadow).not.toBe("none");
+      }
+    } finally {
+      for (const control of controls) control.remove();
+    }
+  });
+
+  it("gives native fields and editor fields the same rounded corners", async () => {
+    await lumine.packages.activatePackage("nova-theme");
+    await lumine.packages.activatePackage("nova-day-ui");
+
+    const nativeField = document.createElement("input");
+    nativeField.className = "input-text";
+    const editorField = document.createElement("lumine-text-editor");
+    editorField.setAttribute("mini", "");
+    document.body.append(nativeField, editorField);
+
+    try {
+      expect(getComputedStyle(nativeField).borderRadius).toBe("9px");
+      expect(getComputedStyle(editorField).borderRadius).toBe("9px");
+    } finally {
+      nativeField.remove();
+      editorField.remove();
+    }
+  });
+
+  it("uses Nova selection colors for generic navigation pills", async () => {
+    await lumine.packages.activatePackage("nova-theme");
+    await lumine.packages.activatePackage("nova-day-ui");
+
+    const nav = document.createElement("ul");
+    nav.className = "nav nav-pills";
+    const item = document.createElement("li");
+    item.className = "active";
+    const link = document.createElement("a");
+    item.appendChild(link);
+    nav.appendChild(item);
+    const tabs = document.createElement("ul");
+    tabs.className = "nav nav-tabs";
+    const tabItem = document.createElement("li");
+    const tabLink = document.createElement("a");
+    tabItem.appendChild(tabLink);
+    tabs.appendChild(tabItem);
+    document.body.append(nav, tabs);
+
+    try {
+      const style = getComputedStyle(link);
+      expect(style.color).toBe("rgb(13, 14, 18)");
+      expect(style.backgroundColor).toBe("rgb(219, 223, 240)");
+      expect(style.borderRadius).toBe("6px");
+      expect(getComputedStyle(tabLink).borderTopLeftRadius).toBe("6px");
+      expect(getComputedStyle(tabLink).borderBottomLeftRadius).toBe("0px");
+    } finally {
+      nav.remove();
+      tabs.remove();
+    }
+  });
+
+  for (const mode of ["day", "night"]) {
+    it(`keeps ${mode} secondary labels and inactive tabs readable`, async () => {
+      await lumine.packages.activatePackage("nova-theme");
+      await lumine.packages.activatePackage(`nova-${mode}-ui`);
+
+      const samples = [
+        ["--text-color-subtle", "--base-background-color"],
+        ["--text-color-hint", "--input-background-color"],
+        ["--tab-text-color", "--tab-background-color"],
+      ].map(([foreground, background]) => {
+        const sample = document.createElement("span");
+        sample.style.color = `var(${foreground})`;
+        sample.style.backgroundColor = `var(${background})`;
+        document.body.appendChild(sample);
+        return sample;
+      });
+
+      try {
+        for (const sample of samples) {
+          const style = getComputedStyle(sample);
+          expect(contrastRatioWithAlpha(style.color, style.backgroundColor)).toBeGreaterThanOrEqual(
+            4.5,
+          );
+        }
+      } finally {
+        for (const sample of samples) sample.remove();
+      }
+    });
+  }
+
+  it("owns Nova-specific symbolic and cursor-line syntax colors", async () => {
+    await lumine.packages.activatePackage("nova-theme");
+    await lumine.packages.activatePackage("nova-day-syntax");
+
+    let rootStyle = getComputedStyle(document.documentElement);
+    expect(rootStyle.getPropertyValue("--syntax-symbolic-color").trim()).toBe("hsl(228, 10%, 26%)");
+    expect(rootStyle.getPropertyValue("--syntax-cursor-line-background-color").trim()).toBe(
+      "rgba(79, 88, 214, 0.05)",
+    );
+
+    await lumine.packages.deactivatePackage("nova-day-syntax");
+    await lumine.packages.activatePackage("nova-night-syntax");
+
+    rootStyle = getComputedStyle(document.documentElement);
+    expect(rootStyle.getPropertyValue("--syntax-symbolic-color").trim()).toBe("hsl(265, 75%, 72%)");
+    expect(rootStyle.getPropertyValue("--syntax-cursor-line-background-color").trim()).toBe(
+      "rgba(122, 131, 242, 0.04)",
+    );
   });
 });

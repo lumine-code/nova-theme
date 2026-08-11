@@ -80,4 +80,6 @@
   --syntax-gutter: hsl(228, 12%, 44%);
   --syntax-guide: hsla(228, 14%, 74%, 0.12);
   --syntax-accent: #7a83f2;
+  --syntax-symbolic-color: var(--hue-3);
+  --syntax-cursor-line-background-color: rgba(122, 131, 242, 0.04);
 }

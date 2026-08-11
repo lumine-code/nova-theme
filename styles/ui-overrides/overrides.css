@@ -38,6 +38,12 @@
   }
 }
 
+.btn.selected,
+.btn.selected:hover,
+.btn.selected:focus {
+  color: var(--button-text-color-selected);
+}
+
 .btn.btn-primary {
   --btn-variant-background: var(--accent-bg-color);
   --btn-variant-text: var(--accent-bg-text-color);
@@ -64,8 +70,16 @@
 }
 
 .btn:is(.btn-primary, .btn-info, .btn-success, .btn-warning, .btn-error) {
+  --btn-variant-active-background: hsl(from var(--btn-variant-background) h s calc(l - 4));
+  --btn-variant-selected-background: hsl(
+    from var(--btn-variant-background) h calc(s + 20) calc(l - 12)
+  );
+  --btn-variant-selected-hover-background: hsl(
+    from var(--btn-variant-background) h calc(s + 20) calc(l - 10)
+  );
   color: var(--btn-variant-text);
   border: 1px solid transparent;
+  background-color: var(--btn-variant-background);
   background-image: none;
 
   &:hover {
@@ -80,6 +94,61 @@
     background-clip: border-box;
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--btn-variant-background) 40%, transparent);
   }
+
+  &:active {
+    background: var(--btn-variant-active-background);
+    box-shadow: none;
+  }
+
+  &.selected {
+    background: var(--btn-variant-selected-background);
+  }
+
+  &.selected:focus,
+  &.selected:hover {
+    background: var(--btn-variant-selected-hover-background);
+  }
+}
+
+/* Success and warning use dark foregrounds, so their pressed and selected
+   surfaces move lighter instead of following the light-text variants darker. */
+.btn:is(.btn-success, .btn-warning) {
+  --btn-variant-active-background: hsl(from var(--btn-variant-background) h s calc(l + 2));
+  --btn-variant-selected-background: hsl(from var(--btn-variant-background) h s calc(l + 4));
+  --btn-variant-selected-hover-background: hsl(from var(--btn-variant-background) h s calc(l + 6));
+}
+
+/* Semantic badges use the same foreground contract as semantic buttons. */
+.badge.badge-info {
+  color: var(--text-color-on-info);
+}
+
+.badge.badge-success {
+  color: var(--text-color-on-success);
+}
+
+.badge.badge-warning {
+  color: var(--text-color-on-warning);
+}
+
+.badge.badge-error {
+  color: var(--text-color-on-error);
+}
+
+.highlight-info {
+  color: var(--text-color-on-info);
+}
+
+.highlight-success {
+  color: var(--text-color-on-success);
+}
+
+.highlight-warning {
+  color: var(--text-color-on-warning);
+}
+
+.highlight-error {
+  color: var(--text-color-on-error);
 }
 
 .btn-group > .btn {
@@ -180,6 +249,9 @@
 
 lumine-text-editor:is([mini], [input]).is-focused,
 .input-checkbox:focus,
+.input-radio:focus,
+.input-toggle:focus,
+.input-range:focus,
 .input-text:focus,
 .input-search:focus,
 .input-number:focus,
@@ -189,7 +261,13 @@ lumine-text-editor:is([mini], [input]).is-focused,
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 35%, transparent);
 }
 
-lumine-text-editor:is([mini], [input]) {
+lumine-text-editor:is([mini], [input]),
+.input-text,
+.input-search,
+.input-number,
+.input-textarea,
+.input-select,
+.input-color {
   border-radius: calc(var(--component-border-radius) * 1.5);
 }
 
@@ -238,6 +316,25 @@ lumine-panel.modal {
   }
 }
 
+/* Navigation */
+
+.nav-tabs > li > a {
+  border-radius: var(--component-border-radius) var(--component-border-radius) 0 0;
+}
+
+.nav-pills > li {
+  > a {
+    border-radius: var(--component-border-radius);
+  }
+
+  &.active > a,
+  &.active > a:hover,
+  &.active > a:focus {
+    color: var(--text-color-selected);
+    background-color: var(--background-color-selected);
+  }
+}
+
 /* Panels and panes */
 
 lumine-panel {
@@ -260,12 +357,30 @@ lumine-panel.tool-panel.panel-bottom:has(> .search-panel) {
   overflow: hidden;
 }
 
-.panel-heading .btn {
+.panel-heading .btn:not(.btn-primary, .btn-info, .btn-success, .btn-warning, .btn-error) {
+  color: var(--text-color);
+  background-color: var(--button-background-color);
   background-image: none;
 
   &:hover {
-    background-color: hsl(from var(--button-background-color-hover) h s calc(l + 10));
+    color: var(--text-color-highlight);
+    background-color: var(--button-background-color-hover);
     background-image: none;
+  }
+
+  &:active {
+    background: hsl(from var(--button-background-color) h s calc(l - 4));
+    box-shadow: none;
+  }
+
+  &.selected {
+    color: var(--button-text-color-selected);
+    background: var(--button-background-color-selected);
+  }
+
+  &.selected:focus,
+  &.selected:hover {
+    background: hsl(from var(--button-background-color-selected) h s calc(l + 2));
   }
 
   &:focus {
@@ -331,27 +446,6 @@ lumine-pane-container lumine-pane {
 
   lumine-dock & .tab.active {
     background-color: var(--tab-background-color-active);
-  }
-
-  /* The scroll strips take the bar's own background so the tabs they cover read
-     as empty bar. Here the bar paints nothing and the pane shows through it, so
-     inheriting would leave them transparent and the covered tab on show. */
-  .tab-scroll {
-    background: var(--pane-item-background-color);
-  }
-
-  /* And the buttons are pills, like the tabs beside them. */
-  .tab-scroll-button {
-    align-self: flex-start;
-    height: var(--tab-pill-height);
-    margin-top: var(--tab-pill-inset);
-    border: none;
-    border-radius: var(--component-border-radius);
-    background-color: transparent;
-
-    &:hover {
-      background-color: color-mix(in srgb, var(--tab-background-color-active) 55%, transparent);
-    }
   }
 
   .placeholder::before {
