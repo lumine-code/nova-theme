@@ -12,12 +12,11 @@ The Nova day and night UI and syntax themes.
 
 ## Installation
 
-To install `nova-theme` search for _nova-theme_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/nova-theme`.
+To install `nova-theme` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/nova-theme`.
 
 ## Theme pack
 
-The package declares its four themes as the **Nova** pack. Use
-`theme-selector:toggle` to preview and select it.
+The package declares its four themes as the **Nova** pack. Use `theme-selector:toggle` to preview and select it.
 
 ## Contributing
 
