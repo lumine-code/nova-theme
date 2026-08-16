@@ -488,6 +488,13 @@ lumine-pane-container > lumine-pane.pane {
 .tree-view {
   --tree-view-padding: 6px 6px var(--component-padding);
   --tree-view-background: transparent;
+  /* The sticky stack covers scrolling rows, so it is the one surface here that
+     cannot be transparent — and its default names the tool-panel color the
+     transparent tree stopped painting. Left at that default it is two percent
+     lighter than the app background the tree now shows, which is invisible
+     along a row's edge and unmistakable in the corners a rounded row leaves
+     behind. */
+  --tree-view-sticky-background: var(--app-background-color);
   --tree-view-row-inset: 4px;
   --tree-view-row-border-radius: var(--component-border-radius);
   --tree-view-root-name-color: var(--text-color-subtle);
