@@ -543,10 +543,9 @@ lumine-pane-container > lumine-pane.pane {
  * A control tile is the same pill as a status-bar tile, so the two strips
  * frame the window with one shape. */
 
-/* A pill is measured against the bar, so the row gives up the bleed the
-   package grants a full-height tile — that reaches above the bar and would
-   push the pill off centre. It has to be set on the row: the row is what
-   carries the bleed and what clips above it. */
+/* Suppress the visible tile's bleed so the pill stays centred inside the bar;
+   the title bar keeps a separate full-height hit layer reaching the screen
+   edge. The value lives on the row so every hosted tile inherits it. */
 .title-bar .control-tiles {
   --title-bar-item-bleed: 0px;
 }
