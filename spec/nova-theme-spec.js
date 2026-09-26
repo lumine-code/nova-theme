@@ -1,5 +1,12 @@
 const path = require("path");
 
+function findSharedOneUiPath(uiPaths, legacyBasename) {
+  return (
+    uiPaths.find((stylePath) => path.basename(stylePath) === "main.css") ??
+    uiPaths.find((stylePath) => path.basename(stylePath) === legacyBasename)
+  );
+}
+
 function colorChannels(color) {
   let match = color.match(/^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
   if (match) return match.slice(1, 4).map(Number);
@@ -69,16 +76,20 @@ describe("nova-theme", () => {
     const syntaxPathByName = new Map(
       syntaxPaths.map((stylePath) => [path.basename(stylePath), stylePath]),
     );
+    // These fallbacks keep this repo's CI green until Lumine repins the
+    // consolidated one-theme stylesheet.
+    const oneUiBadgesPath = findSharedOneUiPath(uiPaths, "02-badges.css");
+    const oneUiButtonsPath = findSharedOneUiPath(uiPaths, "03-buttons.css");
 
-    expect(uiPathByName.get("02-badges.css")).toContain("one-theme");
-    expect(uiPathByName.get("03-buttons.css")).toContain("one-theme");
+    expect(oneUiBadgesPath).toContain("one-theme");
+    expect(oneUiButtonsPath).toContain("one-theme");
     expect(uiPathByName.get("overrides.css")).toContain("nova-theme");
     expect(uiPathByName.has("config.css")).toBe(false);
     expect(syntaxPathByName.get("04-base.css")).toContain("one-theme");
     expect(syntaxPathByName.get("variables.css")).toContain("nova-theme");
     expect(syntaxPathByName.get("overrides.css")).toContain("nova-theme");
 
-    expect(uiPaths.indexOf(uiPathByName.get("03-buttons.css"))).toBeLessThan(
+    expect(uiPaths.indexOf(oneUiButtonsPath)).toBeLessThan(
       uiPaths.indexOf(uiPathByName.get("overrides.css")),
     );
     expect(syntaxPaths.indexOf(syntaxPathByName.get("04-base.css"))).toBeLessThan(
@@ -87,7 +98,7 @@ describe("nova-theme", () => {
 
     await lumine.packages.activatePackage("nova-day-ui");
     await lumine.packages.activatePackage("nova-day-syntax");
-    expect(lumine.themes.stylesheetElementForId(uiPathByName.get("03-buttons.css"))).not.toBeNull();
+    expect(lumine.themes.stylesheetElementForId(oneUiButtonsPath)).not.toBeNull();
     expect(lumine.themes.stylesheetElementForId(uiPathByName.get("overrides.css"))).not.toBeNull();
   });
 
