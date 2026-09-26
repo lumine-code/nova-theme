@@ -2,6 +2,9 @@
 
 The Nova day and night UI and syntax themes.
 
+> [!WARNING]
+> **This theme is deprecated.** It is no longer distributed through the Lumine package catalog or maintained. This repository is archived and no longer receives updates.
+
 ## Features
 
 - **Modern look**: rounded pill tabs, inset rounded selections, flat buttons, and soft accent focus rings.
